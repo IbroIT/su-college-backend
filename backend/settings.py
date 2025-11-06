@@ -1,6 +1,10 @@
 import os
 from pathlib import Path
 import dj_database_url
+from dotenv import load_dotenv
+
+# Загружаем переменные из .env файла
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -48,6 +52,7 @@ INSTALLED_APPS = [
     # third-party
     'rest_framework',
     'corsheaders',
+    'storages',
 
     # твои приложения
     'teachers',
@@ -102,18 +107,25 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 # =======================
-# 💾 База данных (только PostgreSQL)
+# 💾 База данных
 # =======================
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get(
-            'DATABASE_URL',
-            'postgres://postgres:yourpassword@localhost:5432/college_db'
-        ),
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
+# Локально SQLite, на Heroku автоматически PostgreSQL
+if 'DATABASE_URL' in os.environ:
+    # На Heroku используем PostgreSQL
+    DATABASES = {
+        'default': dj_database_url.config(
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    # Локально используем SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # =======================
 # 🔐 Валидация паролей
@@ -139,19 +151,57 @@ REST_FRAMEWORK = {
 # =======================
 # 🖼️ Медиа и статика
 # =======================
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# ========== DigitalOcean Spaces ==========
+USE_SPACES = os.getenv('USE_SPACES', 'False') == 'True'
+
+if USE_SPACES:
+    # Настройки для DigitalOcean Spaces (S3-compatible)
+    AWS_ACCESS_KEY_ID = os.getenv('SPACES_KEY')
+    AWS_SECRET_ACCESS_KEY = os.getenv('SPACES_SECRET')
+    AWS_STORAGE_BUCKET_NAME = os.getenv('SPACES_NAME')
+    AWS_S3_REGION_NAME = os.getenv('SPACES_REGION', 'nyc3')
+    AWS_S3_ENDPOINT_URL = os.getenv('SPACES_ENDPOINT')
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.{AWS_S3_REGION_NAME}.digitaloceanspaces.com"
+    
+    AWS_DEFAULT_ACL = 'public-read'
+    AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+    AWS_QUERYSTRING_AUTH = False
+    AWS_S3_FILE_OVERWRITE = False
+    
+    # Используем STORAGES (Django 4.2+)
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+    
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
+    
+    # Статика
+    STATIC_URL = '/static/'
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+else:
+    # Локальные настройки (без Spaces)
+    STATIC_URL = '/static/'
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # =======================
 # 🔒 Настройки безопасности для продакшена
 # =======================
-if not DEBUG:
+# Включаем только на Heroku (когда есть DATABASE_URL в окружении)
+IS_HEROKU = 'DATABASE_URL' in os.environ
+
+if not DEBUG and IS_HEROKU:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
