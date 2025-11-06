@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 class Teacher(models.Model):
+    
     name_ru = models.CharField(max_length=200, verbose_name=_("Имя (русский)"))
     name_kg = models.CharField(max_length=200, verbose_name=_("Имя (кыргызский)"))
     name_en = models.CharField(max_length=200, verbose_name=_("Имя (английский)"))
@@ -27,6 +28,14 @@ class Teacher(models.Model):
         help_text=_("Например: from-blue-500 to-cyan-500")
     )
     
+    specialization = models.CharField(
+    max_length=200,
+    null=True,
+    blank=True,
+    verbose_name="Специализация (временно)"
+    )
+
+
     is_active = models.BooleanField(default=True, verbose_name=_("Активный"))
     order = models.IntegerField(default=0, verbose_name=_("Порядок отображения"))
     

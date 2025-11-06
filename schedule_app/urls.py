@@ -1,16 +1,22 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from . import views
+from .views import (
+    StudyGroupViewSet, SubjectViewSet, TeacherViewSet,
+    RoomViewSet, TimeSlotViewSet, ScheduleViewSet,
+    ScheduleChangeViewSet
+)
 
 router = DefaultRouter()
-router.register(r'study-groups', views.StudyGroupViewSet)
-router.register(r'schedules', views.ScheduleViewSet)
-router.register(r'features', views.ScheduleFeatureViewSet)
-router.register(r'stats', views.ScheduleStatViewSet)
-router.register(r'time-slots', views.TimeSlotViewSet)
-router.register(r'lesson-types', views.LessonTypeViewSet)
-router.register(r'data', views.ScheduleDataViewSet, basename='schedule-data')
+router.register(r'groups', StudyGroupViewSet)
+router.register(r'subjects', SubjectViewSet)
+router.register(r'teachers', TeacherViewSet)
+router.register(r'rooms', RoomViewSet)
+router.register(r'timeslots', TimeSlotViewSet)
+router.register(r'schedules', ScheduleViewSet)
+router.register(r'schedule-changes', ScheduleChangeViewSet)
+
+app_name = 'schedule_app'
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('api/', include(router.urls)),
 ]

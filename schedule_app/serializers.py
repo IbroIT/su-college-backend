@@ -1,62 +1,156 @@
 from rest_framework import serializers
-from .models import StudyGroup, Teacher, Classroom, Subject, LessonType, TimeSlot, Schedule, ScheduleFeature, ScheduleStat
+from django.utils.translation import get_language
+from .models import (
+    StudyGroup, Subject, Teacher, Room, 
+    TimeSlot, Schedule, ScheduleChange
+)
+
 
 class StudyGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudyGroup
-        fields = ['id', 'name', 'full_name_ru', 'full_name_kg', 'full_name_en', 
-                 'course', 'department', 'is_active', 'order']
+        fields = '__all__'
 
-class TeacherSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Teacher
-        fields = ['id', 'name_ru', 'name_kg', 'name_en', 'position_ru', 'position_kg', 
-                 'position_en', 'department', 'email', 'phone', 'is_active']
-
-class ClassroomSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Classroom
-        fields = ['id', 'number', 'building', 'capacity', 'room_type_ru', 
-                 'room_type_kg', 'room_type_en', 'equipment', 'is_active']
 
 class SubjectSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    
     class Meta:
         model = Subject
-        fields = ['id', 'name_ru', 'name_kg', 'name_en', 'code', 'credits', 
-                 'hours_total', 'hours_lecture', 'hours_practice', 'hours_lab', 'is_active']
+        fields = ['id', 'name', 'name_ru', 'name_en', 'name_ky', 'is_active']
+        
+    def get_name(self, obj):
+        """Возвращает название предмета на текущем языке"""
+        language = get_language()
+        if language == 'en':
+            return obj.name_en
+        elif language == 'ky':
+            return obj.name_ky
+        return obj.name_ru
 
-class LessonTypeSerializer(serializers.ModelSerializer):
+
+class TeacherSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(source='get_full_name', read_only=True)
+    short_name = serializers.CharField(source='__str__', read_only=True)
+    subjects = SubjectSerializer(many=True, read_only=True)
+    
     class Meta:
-        model = LessonType
-        fields = ['id', 'name_ru', 'name_kg', 'name_en', 'color', 
-                 'short_name_ru', 'short_name_kg', 'short_name_en', 'order']
+        model = Teacher
+        fields = [
+            'id', 'first_name', 'last_name', 'middle_name', 
+            'full_name', 'short_name', 'subjects', 'is_active'
+        ]
+
+
+class RoomSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(source='__str__', read_only=True)
+    
+    class Meta:
+        model = Room
+        fields = [
+            'id', 'number', 'full_name', 'is_active'
+        ]
+
 
 class TimeSlotSerializer(serializers.ModelSerializer):
+    time_range = serializers.CharField(source='__str__', read_only=True)
+    start_time_formatted = serializers.SerializerMethodField()
+    end_time_formatted = serializers.SerializerMethodField()
+    
     class Meta:
         model = TimeSlot
-        fields = ['id', 'number', 'start_time', 'end_time', 'order']
+        fields = ['id', 'number', 'start_time', 'end_time', 'start_time_formatted', 'end_time_formatted', 'time_range', 'is_active']
+        
+    def get_start_time_formatted(self, obj):
+        return obj.start_time.strftime('%H:%M') if obj.start_time else None
+        
+    def get_end_time_formatted(self, obj):
+        return obj.end_time.strftime('%H:%M') if obj.end_time else None
+
+
+class ScheduleChangeSerializer(serializers.ModelSerializer):
+    change_type_display = serializers.CharField(source='get_change_type_display', read_only=True)
+    new_teacher = TeacherSerializer(read_only=True)
+    new_room = RoomSerializer(read_only=True)
+    new_time_slot = TimeSlotSerializer(read_only=True)
+    
+    class Meta:
+        model = ScheduleChange
+        fields = [
+            'id', 'change_type', 'change_type_display', 'change_date',
+            'new_teacher', 'new_room', 'new_time_slot', 'reason',
+            'created_by', 'created_at'
+        ]
+
 
 class ScheduleSerializer(serializers.ModelSerializer):
+    group = StudyGroupSerializer(read_only=True)
     subject = SubjectSerializer(read_only=True)
     teacher = TeacherSerializer(read_only=True)
-    classroom = ClassroomSerializer(read_only=True)
-    groups = StudyGroupSerializer(many=True, read_only=True)
-    lesson_type = LessonTypeSerializer(read_only=True)
+    room = RoomSerializer(read_only=True)
     time_slot = TimeSlotSerializer(read_only=True)
+    
+    weekday_display = serializers.CharField(source='get_weekday_display', read_only=True)
+    lesson_type_display = serializers.CharField(source='get_lesson_type_display', read_only=True)
+    week_type_display = serializers.CharField(source='get_week_type_display', read_only=True)
+    
+    changes = ScheduleChangeSerializer(source='schedulechange_set', many=True, read_only=True)
     
     class Meta:
         model = Schedule
-        fields = ['id', 'day_of_week', 'time_slot', 'week_type', 'subject', 
-                 'teacher', 'classroom', 'groups', 'lesson_type', 'subgroup',
-                 'is_active', 'start_date', 'end_date']
+        fields = [
+            'id', 'group', 'subject', 'teacher', 'room', 'time_slot',
+            'weekday', 'weekday_display', 'lesson_type', 'lesson_type_display',
+            'week_type', 'week_type_display', 'start_date', 'end_date',
+            'is_active', 'notes', 'changes'
+        ]
 
-class ScheduleFeatureSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ScheduleFeature
-        fields = ['id', 'icon', 'title_ru', 'title_kg', 'title_en', 
-                 'description_ru', 'description_kg', 'description_en', 'color', 'order']
 
-class ScheduleStatSerializer(serializers.ModelSerializer):
+class ScheduleListSerializer(serializers.ModelSerializer):
+    """Упрощенный сериализатор для списка расписаний"""
+    group_id = serializers.IntegerField(source='group.id', read_only=True)
+    group_name = serializers.CharField(source='group.name', read_only=True)
+    subject_name = serializers.SerializerMethodField()
+    teacher_name = serializers.CharField(source='teacher.__str__', read_only=True)
+    room_name = serializers.CharField(source='room.__str__', read_only=True)
+    time_slot = serializers.IntegerField(source='time_slot.number', read_only=True)
+    time_range = serializers.CharField(source='time_slot.__str__', read_only=True)
+    weekday_display = serializers.CharField(source='get_weekday_display', read_only=True)
+    lesson_type_display = serializers.CharField(source='get_lesson_type_display', read_only=True)
+    
     class Meta:
-        model = ScheduleStat
-        fields = ['number', 'label_ru', 'label_kg', 'label_en', 'order']
+        model = Schedule
+        fields = [
+            'id', 'group_id', 'group_name', 'subject_name', 'teacher_name', 'room_name',
+            'time_slot', 'time_range', 'weekday', 'weekday_display', 'lesson_type', 
+            'lesson_type_display', 'week_type', 'is_active'
+        ]
+        
+    def get_subject_name(self, obj):
+        """Возвращает название предмета на текущем языке"""
+        language = get_language()
+        if language == 'en':
+            return obj.subject.name_en
+        elif language == 'ky':
+            return obj.subject.name_ky
+        return obj.subject.name_ru
+
+
+class ScheduleCreateUpdateSerializer(serializers.ModelSerializer):
+    """Сериализатор для создания и обновления расписания"""
+    
+    class Meta:
+        model = Schedule
+        fields = [
+            'group', 'subject', 'teacher', 'room', 'time_slot',
+            'weekday', 'lesson_type', 'week_type', 'start_date', 
+            'end_date', 'notes', 'is_active'
+        ]
+        
+    def validate(self, data):
+        """Дополнительная валидация"""
+        if data['start_date'] > data['end_date']:
+            raise serializers.ValidationError(
+                "Дата начала не может быть позже даты окончания"
+            )
+        return data

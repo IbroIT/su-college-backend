@@ -1,189 +1,280 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.translation import gettext_lazy as _
 
+
 class StudyGroup(models.Model):
+    """Модель для учебных групп"""
     name = models.CharField(max_length=50, verbose_name=_("Название группы"))
-    full_name_ru = models.CharField(max_length=200, verbose_name=_("Полное название (русский)"))
-    full_name_kg = models.CharField(max_length=200, verbose_name=_("Полное название (кыргызский)"))
-    full_name_en = models.CharField(max_length=200, verbose_name=_("Полное название (английский)"))
-    course = models.IntegerField(verbose_name=_("Курс"))
-    department = models.CharField(max_length=100, verbose_name=_("Факультет"))
-    is_active = models.BooleanField(default=True, verbose_name=_("Активная"))
-    order = models.IntegerField(default=0, verbose_name=_("Порядок"))
+    is_active = models.BooleanField(default=True, verbose_name=_("Активна"))
     
     class Meta:
         verbose_name = _("Учебная группа")
         verbose_name_plural = _("Учебные группы")
-        ordering = ['course', 'name']
-    
+        ordering = ['name']
+        
     def __str__(self):
         return self.name
 
-class Teacher(models.Model):
-    name_ru = models.CharField(max_length=200, verbose_name=_("ФИО (русский)"))
-    name_kg = models.CharField(max_length=200, verbose_name=_("ФИО (кыргызский)"))
-    name_en = models.CharField(max_length=200, verbose_name=_("ФИО (английский)"))
-    position_ru = models.CharField(max_length=100, verbose_name=_("Должность (русский)"))
-    position_kg = models.CharField(max_length=100, verbose_name=_("Должность (кыргызский)"))
-    position_en = models.CharField(max_length=100, verbose_name=_("Должность (английский)"))
-    department = models.CharField(max_length=100, verbose_name=_("Кафедра"))
-    email = models.EmailField(blank=True, verbose_name=_("Email"))
-    phone = models.CharField(max_length=20, blank=True, verbose_name=_("Телефон"))
-    is_active = models.BooleanField(default=True, verbose_name=_("Активный"))
-    
-    class Meta:
-        verbose_name = _("Преподаватель")
-        verbose_name_plural = _("Преподаватели")
-    
-    def __str__(self):
-        return self.name_ru
-
-class Classroom(models.Model):
-    number = models.CharField(max_length=20, verbose_name=_("Номер аудитории"))
-    building = models.CharField(max_length=50, verbose_name=_("Корпус"))
-    capacity = models.IntegerField(verbose_name=_("Вместимость"))
-    room_type_ru = models.CharField(max_length=100, verbose_name=_("Тип аудитории (русский)"))
-    room_type_kg = models.CharField(max_length=100, verbose_name=_("Тип аудитории (кыргызский)"))
-    room_type_en = models.CharField(max_length=100, verbose_name=_("Тип аудитории (английский)"))
-    equipment = models.TextField(blank=True, verbose_name=_("Оборудование"))
-    is_active = models.BooleanField(default=True, verbose_name=_("Активная"))
-    
-    class Meta:
-        verbose_name = _("Аудитория")
-        verbose_name_plural = _("Аудитории")
-    
-    def __str__(self):
-        return f"{self.building}-{self.number}"
 
 class Subject(models.Model):
-    name_ru = models.CharField(max_length=200, verbose_name=_("Название (русский)"))
-    name_kg = models.CharField(max_length=200, verbose_name=_("Название (кыргызский)"))
-    name_en = models.CharField(max_length=200, verbose_name=_("Название (английский)"))
-    code = models.CharField(max_length=20, unique=True, verbose_name=_("Код предмета"))
-    credits = models.IntegerField(verbose_name=_("Кредиты"))
-    hours_total = models.IntegerField(verbose_name=_("Всего часов"))
-    hours_lecture = models.IntegerField(default=0, verbose_name=_("Лекционные часы"))
-    hours_practice = models.IntegerField(default=0, verbose_name=_("Практические часы"))
-    hours_lab = models.IntegerField(default=0, verbose_name=_("Лабораторные часы"))
-    is_active = models.BooleanField(default=True, verbose_name=_("Активный"))
+    """Модель для предметов с поддержкой многоязычности"""
+    name_ru = models.CharField(max_length=200, verbose_name=_("Название (Русский)"))
+    name_en = models.CharField(max_length=200, verbose_name=_("Название (English)"))
+    name_ky = models.CharField(max_length=200, verbose_name=_("Название (Кыргызча)"))
+    is_active = models.BooleanField(default=True, verbose_name=_("Активен"))
     
     class Meta:
         verbose_name = _("Предмет")
         verbose_name_plural = _("Предметы")
-    
+        ordering = ['name_ru']
+        
     def __str__(self):
         return self.name_ru
 
-class LessonType(models.Model):
-    name_ru = models.CharField(max_length=50, verbose_name=_("Название (русский)"))
-    name_kg = models.CharField(max_length=50, verbose_name=_("Название (кыргызский)"))
-    name_en = models.CharField(max_length=50, verbose_name=_("Название (английский)"))
-    color = models.CharField(max_length=100, default="from-blue-500 to-cyan-500", verbose_name=_("Цвет градиента"))
-    short_name_ru = models.CharField(max_length=10, verbose_name=_("Короткое название (русский)"))
-    short_name_kg = models.CharField(max_length=10, verbose_name=_("Короткое название (кыргызский)"))
-    short_name_en = models.CharField(max_length=10, verbose_name=_("Короткое название (английский)"))
-    order = models.IntegerField(default=0, verbose_name=_("Порядок"))
+
+class Teacher(models.Model):
+    """Модель для преподавателей"""
+    first_name = models.CharField(max_length=100, verbose_name=_("Имя"))
+    last_name = models.CharField(max_length=100, verbose_name=_("Фамилия"))
+    middle_name = models.CharField(max_length=100, blank=True, verbose_name=_("Отчество"))
+    subjects = models.ManyToManyField(Subject, verbose_name=_("Предметы"))
+    is_active = models.BooleanField(default=True, verbose_name=_("Активен"))
     
     class Meta:
-        verbose_name = _("Тип занятия")
-        verbose_name_plural = _("Типы занятий")
-        ordering = ['order']
-    
+        verbose_name = _("Преподаватель")
+        verbose_name_plural = _("Преподаватели")
+        ordering = ['last_name', 'first_name']
+        
     def __str__(self):
-        return self.name_ru
+        if self.middle_name:
+            return f"{self.last_name} {self.first_name[0]}.{self.middle_name[0]}."
+        return f"{self.last_name} {self.first_name[0]}."
+    
+    def get_full_name(self):
+        if self.middle_name:
+            return f"{self.last_name} {self.first_name} {self.middle_name}"
+        return f"{self.last_name} {self.first_name}"
+
+
+class Room(models.Model):
+    """Модель для аудиторий"""
+    number = models.CharField(max_length=20, unique=True, verbose_name=_("Номер аудитории"))
+    is_active = models.BooleanField(default=True, verbose_name=_("Активна"))
+    
+    class Meta:
+        verbose_name = _("Аудитория")
+        verbose_name_plural = _("Аудитории")
+        ordering = ['number']
+        
+    def __str__(self):
+        return self.number
+
 
 class TimeSlot(models.Model):
-    number = models.IntegerField(unique=True, verbose_name=_("Номер пары"))
+    """Модель для временных слотов"""
+    number = models.IntegerField(
+        unique=True,
+        validators=[MinValueValidator(1), MaxValueValidator(8)],
+        verbose_name=_("Номер пары")
+    )
     start_time = models.TimeField(verbose_name=_("Время начала"))
     end_time = models.TimeField(verbose_name=_("Время окончания"))
-    order = models.IntegerField(default=0, verbose_name=_("Порядок"))
+    is_active = models.BooleanField(default=True, verbose_name=_("Активен"))
     
     class Meta:
         verbose_name = _("Временной слот")
         verbose_name_plural = _("Временные слоты")
         ordering = ['number']
-    
+        
     def __str__(self):
-        return f"Пара {self.number} ({self.start_time} - {self.end_time})"
+        start_time_str = self.start_time.strftime('%H:%M')
+        end_time_str = self.end_time.strftime('%H:%M')
+        return f"{self.number} пара ({start_time_str} - {end_time_str})"
+
 
 class Schedule(models.Model):
-    DAYS_OF_WEEK = [
-        (0, _('Понедельник')),
-        (1, _('Вторник')),
-        (2, _('Среда')),
-        (3, _('Четверг')),
-        (4, _('Пятница')),
-        (5, _('Суббота')),
-        (6, _('Воскресенье')),
+    """Основная модель расписания"""
+    WEEKDAYS = [
+        (1, _('Понедельник')),
+        (2, _('Вторник')),
+        (3, _('Среда')),
+        (4, _('Четверг')),
+        (5, _('Пятница')),
+        (6, _('Суббота')),
+        (7, _('Воскресенье')),
     ]
     
-    WEEK_TYPES = [
-        ('both', _('Обе недели')),
-        ('numerator', _('Числитель')),
-        ('denominator', _('Знаменатель')),
+    LESSON_TYPES = [
+        ('lecture', _('Лекция')),
+        ('practice', _('Практика')),
+        ('lab', _('Лабораторная')),
+        ('seminar', _('Семинар')),
+        ('exam', _('Экзамен')),
+        ('module', _('Модуль')),
+        ('consultation', _('Консультация')),
+        ('project', _('Проектная работа')),
+        ('elective', _('Элективный курс')),
+        ('club', _('Кружок')),
+        ('sports', _('Спорт')),
     ]
     
-    # Основная информация
-    day_of_week = models.IntegerField(choices=DAYS_OF_WEEK, verbose_name=_("День недели"))
-    time_slot = models.ForeignKey(TimeSlot, on_delete=models.CASCADE, verbose_name=_("Временной слот"))
-    week_type = models.CharField(max_length=15, choices=WEEK_TYPES, default='both', verbose_name=_("Тип недели"))  # Изменено с 10 на 15
-    
-    # Связи
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, verbose_name=_("Предмет"))
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, verbose_name=_("Преподаватель"))
-    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, verbose_name=_("Аудитория"))
-    groups = models.ManyToManyField(StudyGroup, verbose_name=_("Группы"))
-    lesson_type = models.ForeignKey(LessonType, on_delete=models.CASCADE, verbose_name=_("Тип занятия"))
-    
-    # Дополнительная информация
-    subgroup = models.CharField(max_length=10, blank=True, verbose_name=_("Подгруппа"))
-    is_active = models.BooleanField(default=True, verbose_name=_("Активное"))
-    order = models.IntegerField(default=0, verbose_name=_("Порядок"))
-    
-    # Даты
-    start_date = models.DateField(verbose_name=_("Дата начала"))
-    end_date = models.DateField(verbose_name=_("Дата окончания"))
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    group = models.ForeignKey(
+        StudyGroup, 
+        on_delete=models.CASCADE, 
+        verbose_name=_("Группа")
+    )
+    subject = models.ForeignKey(
+        Subject, 
+        on_delete=models.CASCADE, 
+        verbose_name=_("Предмет")
+    )
+    teacher = models.ForeignKey(
+        Teacher, 
+        on_delete=models.CASCADE, 
+        verbose_name=_("Преподаватель")
+    )
+    room = models.ForeignKey(
+        Room, 
+        on_delete=models.CASCADE, 
+        verbose_name=_("Аудитория")
+    )
+    time_slot = models.ForeignKey(
+        TimeSlot, 
+        on_delete=models.CASCADE, 
+        verbose_name=_("Время")
+    )
+    weekday = models.IntegerField(
+        choices=WEEKDAYS, 
+        verbose_name=_("День недели")
+    )
+    lesson_type = models.CharField(
+        max_length=20, 
+        choices=LESSON_TYPES, 
+        default='lecture',
+        verbose_name=_("Тип занятия")
+    )
+    week_type = models.CharField(
+        max_length=10,
+        choices=[
+            ('all', _('Каждую неделю')),
+            ('odd', _('Нечетная неделя')),
+            ('even', _('Четная неделя')),
+        ],
+        default='all',
+        verbose_name=_("Тип недели")
+    )
+    start_date = models.DateField(verbose_name=_("Дата начала"), default='2024-01-01')
+    end_date = models.DateField(verbose_name=_("Дата окончания"), default='2024-12-31')
+    is_active = models.BooleanField(default=True, verbose_name=_("Активно"))
+    notes = models.TextField(blank=True, verbose_name=_("Примечания"))
     
     class Meta:
         verbose_name = _("Расписание")
         verbose_name_plural = _("Расписание")
-        ordering = ['day_of_week', 'time_slot__number', 'order']
-    
+        ordering = ['weekday', 'time_slot__number']
+        unique_together = [
+            ['group', 'weekday', 'time_slot', 'start_date', 'end_date'],
+            # Убираем ограничения для teacher и room - разрешаем поточные лекции
+            # ['teacher', 'weekday', 'time_slot', 'start_date', 'end_date'],
+            # ['room', 'weekday', 'time_slot', 'start_date', 'end_date'],
+        ]
+        
     def __str__(self):
-        return f"{self.get_day_of_week_display()} - {self.time_slot} - {self.subject}"
+        return f"{self.group.name} - {self.subject.name_ru} ({self.get_weekday_display()}, {self.time_slot.number} пара)"
+    
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        
+        if self.start_date > self.end_date:
+            raise ValidationError(_("Дата начала не может быть позже даты окончания"))
+            
+        # Проверка на конфликты расписания
+        conflicts = Schedule.objects.filter(
+            weekday=self.weekday,
+            time_slot=self.time_slot,
+            start_date__lte=self.end_date,
+            end_date__gte=self.start_date,
+            is_active=True
+        ).exclude(pk=self.pk)
+        
+        # НЕ проверяем конфликт преподавателя - разрешаем поточные лекции
+        # teacher_conflict = conflicts.filter(teacher=self.teacher)
+        # if teacher_conflict.exists():
+        #     raise ValidationError(
+        #         _("Преподаватель %(teacher)s уже занят в это время") % {
+        #             'teacher': self.teacher
+        #         }
+        #     )
+        
+        # НЕ проверяем конфликт аудитории - разрешаем поточные лекции
+        # room_conflict = conflicts.filter(room=self.room)
+        # if room_conflict.exists():
+        #     raise ValidationError(
+        #         _("Аудитория %(room)s уже занята в это время") % {
+        #             'room': self.room
+        #         }
+        #     )
+        
+        # Проверка конфликта группы - группа не может быть в двух местах одновременно
+        group_conflict = conflicts.filter(group=self.group)
+        if group_conflict.exists():
+            raise ValidationError(
+                _("Группа %(group)s уже имеет занятие в это время") % {
+                    'group': self.group
+                }
+            )
 
-class ScheduleFeature(models.Model):
-    icon = models.CharField(max_length=50, verbose_name=_("Иконка"))
-    title_ru = models.CharField(max_length=200, verbose_name=_("Заголовок (русский)"))
-    title_kg = models.CharField(max_length=200, verbose_name=_("Заголовок (кыргызский)"))
-    title_en = models.CharField(max_length=200, verbose_name=_("Заголовок (английский)"))
-    description_ru = models.TextField(verbose_name=_("Описание (русский)"))
-    description_kg = models.TextField(verbose_name=_("Описание (кыргызский)"))
-    description_en = models.TextField(verbose_name=_("Описание (английский)"))
-    color = models.CharField(max_length=7, default="#3B82F6", verbose_name=_("Цвет иконки"))
-    order = models.IntegerField(default=0, verbose_name=_("Порядок"))
+
+class ScheduleChange(models.Model):
+    """Модель для изменений в расписании (переносы, отмены)"""
+    CHANGE_TYPES = [
+        ('cancel', _('Отмена')),
+        ('reschedule', _('Перенос')),
+        ('substitute', _('Замена преподавателя')),
+        ('room_change', _('Смена аудитории')),
+    ]
+    
+    original_schedule = models.ForeignKey(
+        Schedule, 
+        on_delete=models.CASCADE, 
+        verbose_name=_("Оригинальное расписание")
+    )
+    change_type = models.CharField(
+        max_length=20, 
+        choices=CHANGE_TYPES, 
+        verbose_name=_("Тип изменения")
+    )
+    change_date = models.DateField(verbose_name=_("Дата изменения"))
+    new_teacher = models.ForeignKey(
+        Teacher, 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True,
+        verbose_name=_("Новый преподаватель")
+    )
+    new_room = models.ForeignKey(
+        Room, 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True,
+        verbose_name=_("Новая аудитория")
+    )
+    new_time_slot = models.ForeignKey(
+        TimeSlot, 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True,
+        verbose_name=_("Новое время")
+    )
+    reason = models.TextField(verbose_name=_("Причина изменения"))
+    created_by = models.CharField(max_length=100, verbose_name=_("Кем создано"))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Дата создания"))
     
     class Meta:
-        verbose_name = _("Особенность расписания")
-        verbose_name_plural = _("Особенности расписания")
-        ordering = ['order']
-    
+        verbose_name = _("Изменение расписания")
+        verbose_name_plural = _("Изменения расписания")
+        ordering = ['-created_at']
+        
     def __str__(self):
-        return self.title_ru
-
-class ScheduleStat(models.Model):
-    number = models.CharField(max_length=50, verbose_name=_("Число"))
-    label_ru = models.CharField(max_length=100, verbose_name=_("Подпись (русский)"))
-    label_kg = models.CharField(max_length=100, verbose_name=_("Подпись (кыргызский)"))
-    label_en = models.CharField(max_length=100, verbose_name=_("Подпись (английский)"))
-    order = models.IntegerField(default=0, verbose_name=_("Порядок"))
-    
-    class Meta:
-        verbose_name = _("Статистика расписания")
-        verbose_name_plural = _("Статистика расписания")
-        ordering = ['order']
-    
-    def __str__(self):
-        return f"{self.number} - {self.label_ru}"
+        return f"{self.get_change_type_display()} - {self.original_schedule} ({self.change_date})"
