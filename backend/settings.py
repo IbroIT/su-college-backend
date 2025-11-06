@@ -7,7 +7,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # =======================
 # 🌍 Общие настройки
 # =======================
-
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-dev-key')
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
@@ -32,7 +31,6 @@ LANGUAGES = [
 LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale')]
 
 USE_I18N = True
-USE_L10N = True
 USE_TZ = True
 TIME_ZONE = 'Asia/Bishkek'
 
@@ -51,7 +49,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
 
-    # приложения
+    # твои приложения
     'teachers',
     'news_app',
     'council_app',
@@ -64,7 +62,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # для статики на Heroku
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -74,24 +72,18 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-
 CORS_ALLOWED_ORIGINS = [
     "https://www.su-college.com",
     "https://su-college.com",
     "http://localhost:5173",
     "http://localhost:3000",
 ]
-
-# Для разработки можно включить:
-# CORS_ALLOW_ALL_ORIGINS = True
-
 CORS_ALLOW_CREDENTIALS = True
 
 # =======================
 # 🧱 Django настройки
 # =======================
 ROOT_URLCONF = 'backend.urls'
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -107,26 +99,21 @@ TEMPLATES = [
         },
     },
 ]
-
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 # =======================
-# 💾 База данных
+# 💾 База данных (только PostgreSQL)
 # =======================
-# Локально используем SQLite, на Heroku - PostgreSQL
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-# На Heroku автоматически переключится на PostgreSQL
-if 'DATABASE_URL' in os.environ:
-    DATABASES['default'] = dj_database_url.config(
+    'default': dj_database_url.config(
+        default=os.environ.get(
+            'DATABASE_URL',
+            'postgres://postgres:yourpassword@localhost:5432/college_db'
+        ),
         conn_max_age=600,
         conn_health_checks=True,
     )
+}
 
 # =======================
 # 🔐 Валидация паролей
@@ -154,8 +141,6 @@ REST_FRAMEWORK = {
 # =======================
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# Whitenoise для эффективной раздачи статики на Heroku
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
