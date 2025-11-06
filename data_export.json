@@ -1,0 +1,50 @@
+[
+{
+  "model": "council_app.councilmember",
+  "pk": 1,
+  "fields": {
+    "name_ru": "Имя (русский):",
+    "name_kg": "Имя (кыргызский):",
+    "name_en": "Имя (английский):",
+    "position_ru": "Должность (русский):",
+    "position_kg": "Должность (кыргызский):",
+    "position_en": "Должность (английский):",
+    "bio_ru": "Биография (русский):",
+    "bio_kg": "Биография (кыргызский):",
+    "bio_en": "Биография (английский):",
+    "image": "council/members/photo_2025-10-24_23-18-51.jpg",
+    "position_type": "other",
+    "instagram": "",
+    "email": "",
+    "linkedin": "",
+    "is_active": true,
+    "order": 0,
+    "created_at": "2025-11-06T12:46:37.857Z",
+    "updated_at": "2025-11-06T12:59:30.900Z"
+  }
+},
+{
+  "model": "council_app.councilmember",
+  "pk": 2,
+  "fields": {
+    "name_ru": "Имя (русский):",
+    "name_kg": "Имя (кыргызский):",
+    "name_en": "Имя (английский):",
+    "position_ru": "Должность (русский):",
+    "position_kg": "Должность (кыргызский):",
+    "position_en": "Должность (английский):",
+    "bio_ru": "Биография (русский):",
+    "bio_kg": "Биография (кыргызский):",
+    "bio_en": "Биография (английский):",
+    "image": "council/members/1686099911_polinka-top-p-zanyatiya-sportom-kartinki-dlya-prezentats-31.png",
+    "position_type": "other",
+    "instagram": "",
+    "email": "",
+    "linkedin": "",
+    "is_active": true,
+    "order": 0,
+    "created_at": "2025-11-06T13:06:23.266Z",
+    "updated_at": "2025-11-06T13:07:13.785Z"
+  }
+}
+]
