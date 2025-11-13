@@ -20,6 +20,7 @@ class NewsListSerializer(serializers.ModelSerializer):
             'id', 'title_ru', 'title_kg', 'title_en',
             'excerpt_ru', 'excerpt_kg', 'excerpt_en',
             'image', 'date', 'category', 'is_featured',
+            'pinned',
             'slug', 'views'
         ]
 
@@ -34,5 +35,6 @@ class NewsDetailSerializer(serializers.ModelSerializer):
             'excerpt_ru', 'excerpt_kg', 'excerpt_en',
             'content_ru', 'content_kg', 'content_en',
             'image', 'date', 'category', 'is_featured',
+            'pinned',
             'slug', 'views', 'images', 'created_at'
         ]
