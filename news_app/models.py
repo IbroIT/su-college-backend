@@ -50,7 +50,7 @@ class News(models.Model):
     class Meta:
         verbose_name = _("Новость")
         verbose_name_plural = _("Новости")
-        ordering = ['-date', '-created_at']
+        ordering = ['-pinned', '-date', '-created_at']
     
     def __str__(self):
         return self.title_ru
