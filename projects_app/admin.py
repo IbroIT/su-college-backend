@@ -1,4 +1,5 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin
 from .models import StudentProject, ProjectFeature, ProjectTechnology, ProjectStat
 
 class ProjectFeatureInline(admin.TabularInline):
@@ -12,7 +13,7 @@ class ProjectTechnologyInline(admin.TabularInline):
     fields = ['name', 'icon', 'color', 'order']
 
 @admin.register(StudentProject)
-class StudentProjectAdmin(admin.ModelAdmin):
+class StudentProjectAdmin(ModelAdmin):
     list_display = ['student_name_ru', 'title_ru', 'is_featured', 'is_published', 'order', 'views']
     list_filter = ['is_featured', 'is_published', 'created_at']
     list_editable = ['is_featured', 'is_published', 'order']

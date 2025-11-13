@@ -1,13 +1,14 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin
 from .models import VacancyCategory, Vacancy, Benefit, VacancyStat, ApplicationInfo
 
 @admin.register(VacancyCategory)
-class VacancyCategoryAdmin(admin.ModelAdmin):
+class VacancyCategoryAdmin(ModelAdmin):
     list_display = ['name_ru', 'icon', 'color', 'order']
     list_editable = ['order']
 
 @admin.register(Vacancy)
-class VacancyAdmin(admin.ModelAdmin):
+class VacancyAdmin(ModelAdmin):
     list_display = ['title_ru', 'category', 'status', 'is_featured', 'is_urgent', 'order', 'deadline']
     list_filter = ['category', 'status', 'is_featured', 'is_urgent', 'created_at']
     list_editable = ['status', 'is_featured', 'is_urgent', 'order']

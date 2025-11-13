@@ -1,4 +1,5 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin
 from django.utils.translation import gettext_lazy as _
 from .models import Teacher, Achievement
 
@@ -10,7 +11,7 @@ class AchievementInline(admin.TabularInline):
     verbose_name_plural = _("Достижения")
 
 @admin.register(Teacher)
-class TeacherAdmin(admin.ModelAdmin):
+class TeacherAdmin(ModelAdmin):
     list_display = [
         'name_ru', 
         'rating', 
