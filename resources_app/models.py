@@ -70,7 +70,7 @@ class EducationalResource(models.Model):
     class Meta:
         verbose_name = _("Образовательный ресурс")
         verbose_name_plural = _("Образовательные ресурсы")
-        ordering = ['order', 'category__order']
+        ordering = ['-pinned', 'order', 'category__order']
     
     def __str__(self):
         return self.title_ru
