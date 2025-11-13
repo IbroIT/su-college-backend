@@ -38,6 +38,7 @@ class News(models.Model):
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='news', verbose_name=_("Категория"))
     date = models.DateTimeField(verbose_name=_("Дата публикации"))
     is_featured = models.BooleanField(default=False, verbose_name=_("В избранное"))
+    pinned = models.BooleanField(default=False, verbose_name=_("Закреплено"))
     is_published = models.BooleanField(default=True, verbose_name=_("Опубликовано"))
     slug = models.SlugField(unique=True, verbose_name=_("URL"))
     

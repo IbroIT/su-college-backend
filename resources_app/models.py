@@ -58,6 +58,7 @@ class EducationalResource(models.Model):
     
     # Метаданные
     is_featured = models.BooleanField(default=False, verbose_name=_("В избранное"))
+    pinned = models.BooleanField(default=False, verbose_name=_("Закреплено"))
     is_available = models.BooleanField(default=True, verbose_name=_("Доступно"))
     order = models.IntegerField(default=0, verbose_name=_("Порядок"))
     

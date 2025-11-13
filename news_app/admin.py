@@ -1,4 +1,5 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin
 from django.utils.html import format_html
 from .models import Category, News, NewsImage
 
@@ -8,7 +9,7 @@ class NewsImageInline(admin.TabularInline):
     fields = ['image', 'caption_ru', 'caption_kg', 'caption_en', 'order']
 
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(ModelAdmin):
     list_display = ['name_ru', 'name_kg', 'name_en', 'slug', 'color_display']
     list_editable = ['slug']
     prepopulated_fields = {'slug': ('name_ru',)}
@@ -22,18 +23,19 @@ class CategoryAdmin(admin.ModelAdmin):
     color_display.short_description = 'Цвет'
 
 @admin.register(News)
-class NewsAdmin(admin.ModelAdmin):
+class NewsAdmin(ModelAdmin):
     list_display = [
         'title_ru', 
         'category', 
         'date', 
-        'is_featured', 
+        'is_featured',
+        'pinned',
         'is_published',
         'views',
         'created_at'
     ]
-    list_filter = ['category', 'is_featured', 'is_published', 'date', 'created_at']
-    list_editable = ['is_featured', 'is_published']
+    list_filter = ['category', 'is_featured', 'pinned', 'is_published', 'date', 'created_at']
+    list_editable = ['is_featured', 'pinned', 'is_published']
     search_fields = ['title_ru', 'title_kg', 'title_en', 'excerpt_ru']
     prepopulated_fields = {'slug': ('title_ru',)}
     readonly_fields = ['views', 'created_at', 'updated_at']
