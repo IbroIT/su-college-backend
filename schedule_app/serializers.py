@@ -111,6 +111,9 @@ class ScheduleListSerializer(serializers.ModelSerializer):
     group_id = serializers.IntegerField(source='group.id', read_only=True)
     group_name = serializers.CharField(source='group.name', read_only=True)
     subject_name = serializers.SerializerMethodField()
+    subject_name_ru = serializers.CharField(source='subject.name_ru', read_only=True)
+    subject_name_en = serializers.CharField(source='subject.name_en', read_only=True)
+    subject_name_ky = serializers.CharField(source='subject.name_ky', read_only=True)
     teacher_name = serializers.CharField(source='teacher.__str__', read_only=True)
     room_name = serializers.CharField(source='room.__str__', read_only=True)
     time_slot = serializers.IntegerField(source='time_slot.number', read_only=True)
@@ -121,9 +124,9 @@ class ScheduleListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Schedule
         fields = [
-            'id', 'group_id', 'group_name', 'subject_name', 'teacher_name', 'room_name',
-            'time_slot', 'time_range', 'weekday', 'weekday_display', 'lesson_type', 
-            'lesson_type_display', 'week_type', 'is_active'
+            'id', 'group_id', 'group_name', 'subject_name', 'subject_name_ru', 'subject_name_en', 'subject_name_ky',
+            'teacher_name', 'room_name', 'time_slot', 'time_range', 'weekday', 'weekday_display', 
+            'lesson_type', 'lesson_type_display', 'week_type', 'is_active'
         ]
         
     def get_subject_name(self, obj):
